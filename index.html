@@ -1105,6 +1105,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // --- NAVIGASI & TAB ACTIONS ---
     btnGuruForm.addEventListener('click', () => { toggleView('form'); cancelEditMode(); });
     btnGuruRekap.addEventListener('click', () => toggleView('rekapGuru'));
     btnGuruPerbaikan.addEventListener('click', () => toggleView('perbaikan'));
@@ -1130,6 +1131,85 @@
     document.getElementById('btnShowRegister').addEventListener('click', () => { loginSection.classList.add('hidden'); registerSection.classList.remove('hidden'); });
     document.getElementById('btnShowLogin').addEventListener('click', () => { registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); });
 
+    // --- MODAL LUPA & GANTI SANDI ---
+    document.getElementById('btnShowLupaSandi').addEventListener('click', () => modalLupaSandi.classList.remove('hidden'));
+    document.getElementById('btnTutupLupaSandi').addEventListener('click', () => modalLupaSandi.classList.add('hidden'));
+
+    const triggerShowGantiSandi = () => {
+        document.getElementById('newPasswordInput').value = '';
+        modalGantiSandi.classList.remove('hidden');
+    };
+    document.getElementById('btnShowGantiSandi').addEventListener('click', triggerShowGantiSandi);
+    document.getElementById('btnShowGantiSandiMobile').addEventListener('click', triggerShowGantiSandi);
+    document.getElementById('btnBatalGantiSandi').addEventListener('click', () => modalGantiSandi.classList.add('hidden'));
+
+    document.getElementById('formGantiSandi').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('newPasswordInput').value;
+        const btnText = document.getElementById('btnGantiSandiText');
+        const btn = document.getElementById('btnSubmitGantiSandi');
+        btn.disabled = true; btnText.innerText = "Menyimpan...";
+        try {
+            await updatePassword(auth.currentUser, newPass);
+            showToast("Kata sandi berhasil diubah!");
+            modalGantiSandi.classList.add('hidden');
+        } catch(err) {
+            showToast(err.code === 'auth/requires-recent-login' ? "Sesi terlalu lama. Harap Keluar (logout) dan login kembali." : "Gagal mengubah sandi.", "error");
+        } finally { btn.disabled = false; btnText.innerText = "Simpan Sandi"; }
+    });
+
+    // --- MODAL REVISI TPG (GURU) ---
+    document.getElementById('btnBatalRevisiModal').addEventListener('click', () => modalRevisi.classList.add('hidden'));
+    document.getElementById('btnKirimRevisiModal').addEventListener('click', async () => {
+        const id = document.getElementById('revisiDocId').value;
+        const alasan = document.getElementById('revisiAlasan').value.trim();
+        const btnText = document.getElementById('btnKirimRevisiText');
+        if(!alasan) return showToast("Alasan perbaikan wajib diisi!", "error");
+        btnText.innerText = "Mengirim...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', id), { statusRevisi: 'Menunggu', alasanRevisi: alasan });
+            showToast("Pengajuan revisi berhasil dikirim ke Admin!");
+            modalRevisi.classList.add('hidden');
+            loadTeacherHistory(); 
+        } catch(e) { showToast("Gagal mengirim pengajuan.", "error"); } 
+        finally { btnText.innerText = "Kirim Pengajuan"; }
+    });
+
+    // --- MODAL PROSES TIKET DAPODIK (ADMIN) ---
+    document.getElementById('btnBatalProsesTiket').addEventListener('click', () => modalProsesTiket.classList.add('hidden'));
+    document.getElementById('btnSimpanProsesTiket').addEventListener('click', async () => {
+        const id = document.getElementById('prosesTiketId').value;
+        const status = document.getElementById('statusProsesTiket').value;
+        const pesan = document.getElementById('catatanProsesTiket').value.trim();
+        const btn = document.getElementById('btnSimpanProsesTiket');
+        const btnText = document.getElementById('btnSimpanProsesTiketText');
+        btn.disabled = true; btnText.innerText = "Menyimpan...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets_dapodik', id), { status: status, pesanAdmin: pesan, lastUpdateAdmin: serverTimestamp() });
+            showToast("Tanggapan berhasil disimpan.");
+            modalProsesTiket.classList.add('hidden');
+            loadAdminTicketsData();
+        } catch (e) { showToast("Gagal menyimpan tanggapan.", "error"); } 
+        finally { btn.disabled = false; btnText.innerText = "Simpan Tanggapan"; }
+    });
+
+    // --- MODAL BALAS TIKET DAPODIK (GURU) ---
+    document.getElementById('btnBatalBalasTiket').addEventListener('click', () => modalBalasTiket.classList.add('hidden'));
+    document.getElementById('btnKirimBalasTiket').addEventListener('click', async () => {
+        const id = document.getElementById('balasTiketId').value;
+        const pesan = document.getElementById('pesanBalasTiket').value.trim();
+        const btn = document.getElementById('btnKirimBalasTiket');
+        const btnText = document.getElementById('btnKirimBalasTiketText');
+        if(!pesan) return showToast("Balasan tidak boleh kosong.", "error");
+        btn.disabled = true; btnText.innerText = "Mengirim...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets_dapodik', id), { pesanGuru: pesan, status: 'Menunggu', lastUpdateGuru: serverTimestamp() });
+            showToast("Balasan berhasil dikirim.");
+            modalBalasTiket.classList.add('hidden');
+            loadTeacherTickets();
+        } catch (e) { showToast("Gagal mengirim balasan.", "error"); } 
+        finally { btn.disabled = false; btnText.innerText = "Kirim Balasan"; }
+    });
     // --- DATA FETCHING (ADMIN & SEKOLAH) ---
     const renderAdminTable = (dataArray) => {
         const bodyAdmin = document.getElementById('adminTableBody');
@@ -1500,25 +1580,7 @@
     };
 
     // ============================================================================
-    // 6. EVENT BINDING TUNGGAL (FILTERS & REFRESH)
-    // ============================================================================
-    document.getElementById('adminSearch').addEventListener('input', filterAdminData);
-    document.getElementById('adminFilterStatus').addEventListener('change', filterAdminData);
-    document.getElementById('adminFilterBulan').addEventListener('change', filterAdminData);
-    document.getElementById('adminFilterTahun').addEventListener('change', filterAdminData);
     
-    document.getElementById('guruFilterTahunIndividu').addEventListener('change', renderIndividualMatrix);
-    document.getElementById('guruFilterTahunSekolah').addEventListener('change', () => buildSchoolMatrixHTML(document.getElementById('guruFilterTahunSekolah').value, 'guruSekolahBody'));
-    document.getElementById('adminFilterTahunMatriks').addEventListener('change', () => buildSchoolMatrixHTML(document.getElementById('adminFilterTahunMatriks').value, 'adminSekolahBody'));
-    
-    document.getElementById('btnRefreshAdminTable').addEventListener('click', loadAdminData);
-    document.getElementById('btnRefreshAdminMatriks').addEventListener('click', loadAdminData);
-    document.getElementById('btnRefreshApproveRevisi').addEventListener('click', loadAdminApproveRevisiData);
-    document.getElementById('btnRefreshRekapIndividu').addEventListener('click', loadTeacherHistory);
-    document.getElementById('btnRefreshRekapSekolah').addEventListener('click', loadAdminData);
-    document.getElementById('btnRefreshAdminTickets').addEventListener('click', loadAdminTicketsData);
-    document.getElementById('btnRefreshTickets').addEventListener('click', loadTeacherTickets);
-    document.getElementById('btnRefreshUsers').addEventListener('click', loadUserData);
 
     // ============================================================================
     // 7. LOGIKA SUBMIT FORM & MODALS
@@ -1571,6 +1633,18 @@
         finally { btnText.innerText = "Daftar Sekarang"; }
     });
 
+    // --- LOGOUT ACTION (DESKTOP & MOBILE) ---
+    const handleLogout = async () => {
+        await signOut(auth);
+        dashboardSection.classList.add('hidden');
+        authWrapper.classList.remove('hidden');
+        cancelEditMode();
+        currentUserName = "";
+        showToast("Sesi telah diakhiri. Anda berhasil keluar.");
+    };
+
+    document.getElementById('btnLogout').addEventListener('click', handleLogout);
+    document.getElementById('btnLogoutMobile').addEventListener('click', handleLogout);
     // Form TPG (Submit & Update)
     document.getElementById('formTPG').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1698,7 +1772,26 @@
         showToast(`Import selesai: ${successCount} berhasil, ${errorCount} gagal.`, errorCount > 0 ? 'error' : 'success');
         if(successCount > 0) loadUserData(); 
     });
-
+// 6. EVENT BINDING TUNGGAL (FILTERS & REFRESH)
+    // ============================================================================
+    document.getElementById('adminSearch').addEventListener('input', filterAdminData);
+    document.getElementById('adminFilterStatus').addEventListener('change', filterAdminData);
+    document.getElementById('adminFilterBulan').addEventListener('change', filterAdminData);
+    document.getElementById('adminFilterTahun').addEventListener('change', filterAdminData);
+    
+    document.getElementById('guruFilterTahunIndividu').addEventListener('change', renderIndividualMatrix);
+    document.getElementById('guruFilterTahunSekolah').addEventListener('change', () => buildSchoolMatrixHTML(document.getElementById('guruFilterTahunSekolah').value, 'guruSekolahBody'));
+    document.getElementById('adminFilterTahunMatriks').addEventListener('change', () => buildSchoolMatrixHTML(document.getElementById('adminFilterTahunMatriks').value, 'adminSekolahBody'));
+    
+    document.getElementById('btnRefreshAdminTable').addEventListener('click', loadAdminData);
+    document.getElementById('btnRefreshAdminMatriks').addEventListener('click', loadAdminData);
+    document.getElementById('btnRefreshApproveRevisi').addEventListener('click', loadAdminApproveRevisiData);
+    document.getElementById('btnRefreshRekapIndividu').addEventListener('click', loadTeacherHistory);
+    document.getElementById('btnRefreshRekapSekolah').addEventListener('click', loadAdminData);
+    document.getElementById('btnRefreshAdminTickets').addEventListener('click', loadAdminTicketsData);
+    document.getElementById('btnRefreshTickets').addEventListener('click', loadTeacherTickets);
+    document.getElementById('btnRefreshUsers').addEventListener('click', loadUserData);
+    
     // ============================================================================
     // 8. AUTH OBSERVER
     // ============================================================================
