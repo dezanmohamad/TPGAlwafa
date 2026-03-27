@@ -1223,6 +1223,10 @@
         }
         
         emptyState.classList.add('hidden');
+        
+        // Urutkan berdasarkan nama (A-Z)
+        dataArray.sort((a, b) => a.namaGuru.localeCompare(b.namaGuru));
+
         dataArray.forEach((data) => {
             const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString('id-ID') : '-';
             const periodeStr = (data.bulan && data.tahun) ? `<div class="font-bold text-slate-800">${data.bulan} ${data.tahun}</div><div class="text-[10px] text-slate-400 font-medium">Diinput: ${date}</div>` : `<div class="text-slate-500">${date}</div>`;
@@ -1258,7 +1262,7 @@
             schoolMatrix[d.namaGuru][d.bulan] = d;
         });
 
-        Object.keys(schoolMatrix).sort().forEach(guru => {
+        Object.keys(schoolMatrix).sort((a, b) => a.localeCompare(b)).forEach(guru => {
             let tr = `<tr class="hover:bg-slate-50/80 transition-colors divide-x divide-slate-100">
                         <td class="px-4 py-3 font-semibold text-slate-700 text-left sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate" title="${guru}">${guru}</td>`;
             bulanDaftar.forEach(bln => {
@@ -1538,11 +1542,13 @@
     const loadUserData = async () => {
         const body = document.getElementById('userTableBody');
         body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Memuat pengguna...</td></tr>';
-        try {
+       try {
             const querySnapshot = await getDocs(usersCol);
             let rawUsers = [];
             querySnapshot.forEach(doc => rawUsers.push({ id: doc.id, ...doc.data() }));
-            rawUsers.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            
+            // Urutkan berdasarkan nama (A-Z)
+            rawUsers.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
             
             body.innerHTML = '';
             rawUsers.forEach((data) => {
