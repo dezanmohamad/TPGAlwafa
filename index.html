@@ -1536,11 +1536,11 @@ const cancelEditMode = () => {
         } catch(e) { showToast("Gagal memuat antrean tiket.", "error"); }
     };
 
-    // --- MANAJEMEN AKUN (ADMIN) ---
+   // --- MANAJEMEN AKUN (ADMIN) ---
     const loadUserData = async () => {
         const body = document.getElementById('userTableBody');
         body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Memuat pengguna...</td></tr>';
-       try {
+        try {
             const querySnapshot = await getDocs(usersCol);
             let rawUsers = [];
             querySnapshot.forEach(doc => rawUsers.push({ id: doc.id, ...doc.data() }));
@@ -1563,21 +1563,62 @@ const cancelEditMode = () => {
                     </td>
                     <td class="px-6 py-4 text-slate-500 text-xs">${date}</td>
                     <td class="px-6 py-4 text-right">
-                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none' : ''}">
-                            ${isAdmin ? 'Cabut Akses Admin' : 'Jadikan Admin'}
+                        <button class="edit-nama-btn bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 rounded-lg text-xs font-bold transition-all border border-stone-200 shadow-sm mr-1">
+                            Edit Nama
+                        </button>
+                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none hidden' : ''}">
+                            ${isAdmin ? 'Cabut Admin' : 'Jadikan Admin'}
                         </button>
                     </td>
                 `;
-                const btn = row.querySelector('.promote-btn');
-                btn.addEventListener('click', async () => {
+
+                // Logika Tombol Edit Nama (Sinkronisasi Masal)
+                const editBtn = row.querySelector('.edit-nama-btn');
+                editBtn.addEventListener('click', async () => {
+                    const newName = prompt(`Ubah nama & gelar untuk akun ${data.username}:`, data.nama);
+                    
+                    // Jika admin mengisi nama baru dan berbeda dengan yang lama
+                    if (newName && newName.trim() !== "" && newName.trim() !== data.nama) {
+                        editBtn.disabled = true; editBtn.innerText = "...";
+                        try {
+                            const finalName = newName.trim();
+                            // 1. Update nama di koleksi 'users'
+                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { nama: finalName });
+
+                            // 2. Sinkronisasi nama di SEMUA histori laporan (data_tpg) agar matriks tidak pecah
+                            const qTpg = query(tpgDataCol, where("userId", "==", data.id));
+                            const snapTpg = await getDocs(qTpg);
+                            
+                            const updatePromises = [];
+                            snapTpg.forEach(docTpg => {
+                                updatePromises.push(updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', docTpg.id), { namaGuru: finalName }));
+                            });
+                            
+                            // Eksekusi semua update data historis secara bersamaan
+                            await Promise.all(updatePromises);
+
+                            showToast(`Berhasil! Nama diubah dan ${snapTpg.size} riwayat laporan ikut disinkronkan.`);
+                            loadUserData(); // Segarkan tabel
+                            loadAdminData(); // Segarkan data matriks global di latar belakang
+                        } catch(e) { 
+                            showToast("Gagal mengubah nama dan sinkronisasi.", "error"); 
+                            editBtn.disabled = false; editBtn.innerText = "Edit Nama";
+                        }
+                    }
+                });
+
+                // Logika Tombol Eskalasi (Jadikan Admin / Cabut Admin)
+                const promoteBtn = row.querySelector('.promote-btn');
+                promoteBtn.addEventListener('click', async () => {
                     const newRole = isAdmin ? 'guru' : 'admin';
-                    btn.disabled = true; btn.innerText = "...";
+                    promoteBtn.disabled = true; promoteBtn.innerText = "...";
                     try {
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { role: newRole });
                         showToast(`Status ${data.nama} diperbarui menjadi ${newRole.toUpperCase()}`);
                         loadUserData();
-                    } catch(e) { showToast("Gagal memodifikasi hak akses.", "error"); btn.disabled = false; }
+                    } catch(e) { showToast("Gagal memodifikasi hak akses.", "error"); promoteBtn.disabled = false; }
                 });
+
                 body.appendChild(row);
             });
         } catch (err) { showToast("Gagal memuat manajemen sistem.", "error"); }
