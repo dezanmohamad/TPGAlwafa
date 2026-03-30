@@ -342,8 +342,8 @@
                         <!-- Section: Data Diri & Status -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div class="md:col-span-2">
-                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Beserta Gelar)</label>
-                                <input type="text" id="namaGuruTPG" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm" placeholder="Budi Santoso, S.Pd., Gr.">
+                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Otomatis dari Sistem)</label>
+                                <input type="text" id="namaGuruTPG" required readonly class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm bg-slate-100 text-slate-600 shadow-sm cursor-not-allowed" placeholder="Otomatis terisi dari profil Anda">
                             </div>
                             <div>
                                 <label for="nuptk" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">NUPTK / NRG (16 Angka)</label>
@@ -869,7 +869,7 @@
         const toastText = document.getElementById('toastText');
         
         toastMessage.className = `flex items-center p-4 rounded-2xl shadow-xl shadow-slate-200/50 text-white font-medium border border-white/20 backdrop-blur-md ${type === 'success' ? 'bg-rose-900/95' : 'bg-red-800/90'}`;
-        toastIcon.innerHTML = type === 'success' ? 
+        toastIcon.inner = type === 'success' ? 
             '<svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
             '<svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
         toastText.innerText = message;
@@ -1060,21 +1060,24 @@
         }
     };
 
-    const cancelEditMode = () => {
-        document.getElementById('formTPG').reset();
-        document.getElementById('formTicket').reset();
-        document.getElementById('editDocId').value = "";
-        document.getElementById('periodeBulan').disabled = false;
-        document.getElementById('periodeTahun').disabled = false;
-        
-        document.getElementById('formTitle').innerText = "Formulir Laporan TPG";
-        document.getElementById('formTitle').classList.remove('text-rose-700');
-        document.getElementById('btnText').innerText = "Kirim Laporan";
-        const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.classList.replace('bg-rose-600', 'bg-slate-800');
-        btnSubmit.classList.replace('hover:bg-rose-700', 'hover:bg-slate-900');
-        document.getElementById('btnCancelEdit').classList.add('hidden');
-    };
+const cancelEditMode = () => {
+    document.getElementById('formTPG').reset();
+    document.getElementById('formTicket').reset();
+    
+    // Tambahkan baris ini agar nama tetap terkunci pada profil pemilik
+    document.getElementById('namaGuruTPG').value = currentUserName; 
+    
+    document.getElementById('editDocId').value = "";
+    document.getElementById('periodeBulan').disabled = false;
+    document.getElementById('periodeTahun').disabled = false;
+    document.getElementById('formTitle').innerText = "Formulir Laporan TPG";
+    document.getElementById('formTitle').classList.remove('text-rose-700');
+    document.getElementById('btnText').innerText = "Kirim Laporan";
+    const btnSubmit = document.getElementById('btnSubmit');
+    btnSubmit.classList.replace('bg-rose-600', 'bg-slate-800');
+    btnSubmit.classList.replace('hover:bg-rose-700', 'hover:bg-slate-900');
+    document.getElementById('btnCancelEdit').classList.add('hidden');
+};
 
     const populateEditForm = (data) => {
         document.getElementById('editDocId').value = data.id;
@@ -1108,21 +1111,33 @@
     // 5. DATA FETCHING & RENDERING
     // ============================================================================
     
+// 1. Fungsi renderAdminTable (Perbaikan insertAdjacentHTML & Proteksi Null)
     const renderAdminTable = (dataArray) => {
         const bodyAdmin = document.getElementById('adminTableBody');
         const emptyState = document.getElementById('adminTableEmpty');
+        
+        // Proteksi: Jika elemen HTML tidak sengaja terhapus, hentikan fungsi agar tidak error
+        if (!bodyAdmin) return console.error("Error: Elemen 'adminTableBody' tidak ditemukan di HTML.");
+
         bodyAdmin.innerHTML = '';
+        
         if(dataArray.length === 0) {
-            emptyState.classList.remove('hidden');
+            if(emptyState) emptyState.classList.remove('hidden');
             return;
         }
-        emptyState.classList.add('hidden');
+        
+        if(emptyState) emptyState.classList.add('hidden');
+        
+        // Urutkan berdasarkan nama (A-Z)
+        dataArray.sort((a, b) => a.namaGuru.localeCompare(b.namaGuru));
+
         dataArray.forEach((data) => {
             const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString('id-ID') : '-';
             const periodeStr = (data.bulan && data.tahun) ? `<div class="font-bold text-slate-800">${data.bulan} ${data.tahun}</div><div class="text-[10px] text-slate-400 font-medium">Diinput: ${date}</div>` : `<div class="text-slate-500">${date}</div>`;
             const jjmBadge = `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold ${data.statusJJM.includes('Aman') ? 'bg-stone-100 text-stone-700 border border-stone-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}">${data.statusJJM}</span>`;
             const cairClass = data.statusCair === 'Cair' ? 'text-rose-800 font-bold' : 'text-slate-500 font-medium';
 
+            // Menggunakan insertAdjacentHTML yang benar
             bodyAdmin.insertAdjacentHTML('beforeend', `
                 <tr class="hover:bg-slate-50/80 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap">${periodeStr}</td>
@@ -1137,8 +1152,13 @@
         });
     };
 
+    // 2. Fungsi buildSchoolMatrixHTML (Perbaikan insertAdjacentHTML & Proteksi Null)
     const buildSchoolMatrixHTML = (year, tableBodyId) => {
         const body = document.getElementById(tableBodyId);
+        
+        // Proteksi: Cegah error "Cannot read properties of null"
+        if (!body) return console.error("Error: Elemen '" + tableBodyId + "' tidak ditemukan di HTML.");
+
         body.innerHTML = '';
         const filteredData = allAdminDataCache.filter(item => item.tahun === year);
         if(filteredData.length === 0) {
@@ -1152,7 +1172,7 @@
             schoolMatrix[d.namaGuru][d.bulan] = d;
         });
 
-        Object.keys(schoolMatrix).sort().forEach(guru => {
+        Object.keys(schoolMatrix).sort((a, b) => a.localeCompare(b)).forEach(guru => {
             let tr = `<tr class="hover:bg-slate-50/80 transition-colors divide-x divide-slate-100">
                         <td class="px-4 py-3 font-semibold text-slate-700 text-left sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate" title="${guru}">${guru}</td>`;
             bulanDaftar.forEach(bln => {
@@ -1160,10 +1180,11 @@
                 tr += `<td class="px-2 py-3">${getStatusBadge(cellData, false)}</td>`;
             });
             tr += `</tr>`;
+            
+            // Menggunakan insertAdjacentHTML yang benar
             body.insertAdjacentHTML('beforeend', tr);
         });
     };
-
     const filterAdminData = () => {
         const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
         const filterStatus = document.getElementById('adminFilterStatus').value;
@@ -1180,7 +1201,7 @@
         renderAdminTable(filteredData);
     };
 
-    const loadAdminData = async () => {
+const loadAdminData = async () => {
         try {
             const querySnapshot = await getDocs(tpgDataCol);
             let rawData = [];
@@ -1191,7 +1212,13 @@
             filterAdminData();
             buildSchoolMatrixHTML(document.getElementById('guruFilterTahunSekolah').value, 'guruSekolahBody');
             buildSchoolMatrixHTML(document.getElementById('adminFilterTahunMatriks').value, 'adminSekolahBody');
-        } catch (err) { showToast("Gagal memuat rekap data.", "error"); }
+            
+        } catch (err) { 
+            // Tambahkan console.error agar pesan aslinya terlihat di F12
+            console.error("Detail Error Load Admin:", err); 
+            // Tampilkan pesan aslinya di Toast
+            showToast("Gagal memuat: " + err.message, "error"); 
+        }
     };
 
     const loadAdminApproveRevisiData = async () => {
@@ -1780,20 +1807,25 @@
     // 8. AUTH OBSERVER
     // ============================================================================
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            dashboardSection.classList.add('hidden');
-            authWrapper.classList.remove('hidden');
-        } else {
-            const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
-            if(userDoc.exists()) {
-                currentUserName = userDoc.data().nama;
-                authWrapper.classList.add('hidden');
-                dashboardSection.classList.remove('hidden');
-                userRoleDisplay.innerText = userDoc.data().role;
-                toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
-            }
+    if (!user) {
+        dashboardSection.classList.add('hidden');
+        authWrapper.classList.remove('hidden');
+    } else {
+        const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
+        if(userDoc.exists()) {
+            currentUserName = userDoc.data().nama;
+            
+            // Tambahkan dua baris ini untuk auto-fill nama ke form HTML
+            const inputNama = document.getElementById('namaGuruTPG');
+            if (inputNama) inputNama.value = currentUserName; 
+            
+            authWrapper.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            userRoleDisplay.innerText = userDoc.data().role;
+            toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
         }
-    });
+    }
+});
 </script>
 </body>
 </html>
