@@ -342,9 +342,8 @@
                         <!-- Section: Data Diri & Status -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div class="md:col-span-2">
-                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Beserta Gelar)</label>
-                                <input type="text" id="namaGuruTPG" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm" placeholder="Budi Santoso, S.Pd., Gr.">
-                            </div>
+                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Otomatis dari Sistem)</label>
+                                <input type="text" id="namaGuruTPG" required readonly class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm bg-slate-100 text-slate-600 shadow-sm cursor-not-allowed" placeholder="Otomatis terisi dari profil Anda">
                             <div>
                                 <label for="nuptk" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">NUPTK / NRG (16 Angka)</label>
                                 <input type="text" id="nuptk" required minlength="16" maxlength="16" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm font-mono" placeholder="0000000000000000">
@@ -1061,12 +1060,11 @@
         }
     };
 
-    const cancelEditMode = () => {
-        document.getElementById('formTPG').reset();
-        document.getElementById('formTicket').reset();
-        document.getElementById('editDocId').value = "";
-        document.getElementById('periodeBulan').disabled = false;
-        document.getElementById('periodeTahun').disabled = false;
+const cancelEditMode = () => {
+    document.getElementById('formTPG').reset();
+    document.getElementById('namaGuruTPG').value = currentUserName; // Tambahkan baris ini
+    document.getElementById('editDocId').value = "";
+    document.getElementById('periodeBulan').disabled = false;
         
         document.getElementById('formTitle').innerText = "Formulir Laporan TPG";
         document.getElementById('formTitle').classList.remove('text-rose-700');
@@ -1801,21 +1799,26 @@
     // ============================================================================
     // 8. AUTH OBSERVER
     // ============================================================================
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            dashboardSection.classList.add('hidden');
-            authWrapper.classList.remove('hidden');
-        } else {
-            const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
-            if(userDoc.exists()) {
-                currentUserName = userDoc.data().nama;
-                authWrapper.classList.add('hidden');
-                dashboardSection.classList.remove('hidden');
-                userRoleDisplay.innerText = userDoc.data().role;
-                toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
-            }
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        dashboardSection.classList.add('hidden');
+        authWrapper.classList.remove('hidden');
+    } else {
+        const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
+        if(userDoc.exists()) {
+            currentUserName = userDoc.data().nama;
+            
+            // Tambahkan baris ini untuk auto-fill nama di form
+            const inputNama = document.getElementById('namaGuruTPG');
+            if (inputNama) inputNama.value = currentUserName; 
+            
+            authWrapper.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            userRoleDisplay.innerText = userDoc.data().role;
+            toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
         }
-    });
+    }
+});
 </script>
 </body>
 </html>
