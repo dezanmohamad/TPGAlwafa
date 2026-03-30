@@ -1452,13 +1452,13 @@ const loadAdminData = async () => {
         const body = document.getElementById('userTableBody');
         body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Memuat pengguna...</td></tr>';
         try {
-            const querySnapshot = await getDocs(usersCol);
-            let rawUsers = [];
-            querySnapshot.forEach(doc => rawUsers.push({ id: doc.id, ...doc.data() }));
-            rawUsers.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            
+            const snap = await getDocs(usersCol);
+            let users = []; 
+            snap.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+            users.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
             body.innerHTML = '';
-            rawUsers.forEach((data) => {
+            
+            users.forEach((data) => {
                 const isSelf = auth.currentUser.uid === data.id;
                 const isAdmin = data.role === 'admin';
                 const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString('id-ID') : '-';
@@ -1467,25 +1467,59 @@ const loadAdminData = async () => {
                 row.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-800">${data.nama} ${isSelf ? '<span class="text-[9px] bg-slate-800 text-white px-2 py-0.5 rounded ml-2 uppercase tracking-wider">Anda</span>' : ''}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${data.username}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isAdmin ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-stone-50 text-stone-600 border-stone-200'}">${data.role}</span>
-                    </td>
+                    <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border ${isAdmin ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-stone-50 text-stone-600 border-stone-200'}">${data.role}</span></td>
                     <td class="px-6 py-4 text-slate-500 text-xs">${date}</td>
                     <td class="px-6 py-4 text-right">
-                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none' : ''}">
-                            ${isAdmin ? 'Cabut Akses Admin' : 'Jadikan Admin'}
-                        </button>
+                        <button class="edit-nama-btn bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 rounded-lg text-xs font-bold transition-all border border-stone-200 shadow-sm mr-1">Edit Nama</button>
+                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none hidden' : ''}">${isAdmin ? 'Cabut Admin' : 'Jadikan Admin'}</button>
                     </td>
                 `;
-                const btn = row.querySelector('.promote-btn');
-                btn.addEventListener('click', async () => {
+
+                // FITUR SINKRONISASI NAMA MASAL
+                const editBtn = row.querySelector('.edit-nama-btn');
+                editBtn.addEventListener('click', async () => {
+                    const newName = prompt(`Ubah nama & gelar untuk akun ${data.username}:`, data.nama);
+                    if (newName && newName.trim() !== "" && newName.trim() !== data.nama) {
+                        editBtn.disabled = true; editBtn.innerText = "...";
+                        try {
+                            const finalName = newName.trim();
+                            // 1. Update nama profil user
+                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { nama: finalName });
+                            
+                            // 2. Timpa semua nama di laporan TPG lama yang terlanjur terpisah
+                            const qTpg = query(tpgDataCol, where("userId", "==", data.id));
+                            const snapTpg = await getDocs(qTpg);
+                            
+                            // Tunggu semua proses update selesai sepenuhnya
+                            for (const docTpg of snapTpg.docs) {
+                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', docTpg.id), { namaGuru: finalName });
+                            }
+                            
+                            showToast(`Nama diubah dan ${snapTpg.size} riwayat laporan disinkronkan.`);
+                            
+                            // Refresh data secara berurutan agar tampilan tidak crash
+                            await loadAdminData(); 
+                            await loadUserData(); 
+                            
+                        } catch(e) { 
+                            showToast("Gagal sinkronisasi.", "error"); 
+                            editBtn.disabled = false; editBtn.innerText = "Edit Nama"; 
+                        }
+                    }
+                });
+
+                const promoteBtn = row.querySelector('.promote-btn');
+                promoteBtn.addEventListener('click', async () => {
                     const newRole = isAdmin ? 'guru' : 'admin';
-                    btn.disabled = true; btn.innerText = "...";
-                    try {
+                    promoteBtn.disabled = true; promoteBtn.innerText = "...";
+                    try { 
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { role: newRole });
-                        showToast(`Status ${data.nama} diperbarui menjadi ${newRole.toUpperCase()}`);
-                        loadUserData();
-                    } catch(e) { showToast("Gagal memodifikasi hak akses.", "error"); btn.disabled = false; }
+                        showToast(`Status diperbarui menjadi ${newRole.toUpperCase()}`); 
+                        await loadUserData(); 
+                    } catch(e) { 
+                        showToast("Gagal akses.", "error"); 
+                        promoteBtn.disabled = false; 
+                    }
                 });
                 body.appendChild(row);
             });
