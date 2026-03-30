@@ -601,6 +601,7 @@
                                         <th class="px-6 py-4 border-b border-slate-200">Info GTK</th>
                                         <th class="px-6 py-4 border-b border-slate-200">Pencairan</th>
                                         <th class="px-6 py-4 border-b border-slate-200">Catatan Khusus</th>
+                                        <th class="px-6 py-4 border-b border-slate-200 text-right">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -827,7 +828,7 @@
     // 1. INISIALISASI FIREBASE & AUTH
     // ============================================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -1111,14 +1112,12 @@ const cancelEditMode = () => {
     // 5. DATA FETCHING & RENDERING
     // ============================================================================
     
-// 1. Fungsi renderAdminTable (Perbaikan insertAdjacentHTML & Proteksi Null)
+// 1. Fungsi renderAdminTable (Ditambah Fitur Hapus)
     const renderAdminTable = (dataArray) => {
         const bodyAdmin = document.getElementById('adminTableBody');
         const emptyState = document.getElementById('adminTableEmpty');
         
-        // Proteksi: Jika elemen HTML tidak sengaja terhapus, hentikan fungsi agar tidak error
-        if (!bodyAdmin) return console.error("Error: Elemen 'adminTableBody' tidak ditemukan di HTML.");
-
+        if (!bodyAdmin) return;
         bodyAdmin.innerHTML = '';
         
         if(dataArray.length === 0) {
@@ -1128,7 +1127,6 @@ const cancelEditMode = () => {
         
         if(emptyState) emptyState.classList.add('hidden');
         
-        // Urutkan berdasarkan nama (A-Z)
         dataArray.sort((a, b) => a.namaGuru.localeCompare(b.namaGuru));
 
         dataArray.forEach((data) => {
@@ -1137,18 +1135,37 @@ const cancelEditMode = () => {
             const jjmBadge = `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold ${data.statusJJM.includes('Aman') ? 'bg-stone-100 text-stone-700 border border-stone-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}">${data.statusJJM}</span>`;
             const cairClass = data.statusCair === 'Cair' ? 'text-rose-800 font-bold' : 'text-slate-500 font-medium';
 
-            // Menggunakan insertAdjacentHTML yang benar
-            bodyAdmin.insertAdjacentHTML('beforeend', `
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">${periodeStr}</td>
-                    <td class="px-6 py-4"><div class="font-semibold text-slate-800">${data.namaGuru}</div><div class="text-xs font-mono text-slate-400 mt-0.5">${data.nuptk}</div></td>
-                    <td class="px-6 py-4 hidden">${data.nuptk}</td>
-                    <td class="px-6 py-4">${jjmBadge}</td>
-                    <td class="px-6 py-4 text-slate-600 font-medium">${data.statusInfoGTK}</td>
-                    <td class="px-6 py-4 ${cairClass}">${data.statusCair}</td>
-                    <td class="px-6 py-4 text-slate-500 text-xs italic max-w-[200px] truncate" title="${data.kendala}">${data.kendala || '-'}</td>
-                </tr>
-            `);
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50/80 transition-colors";
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">${periodeStr}</td>
+                <td class="px-6 py-4"><div class="font-semibold text-slate-800">${data.namaGuru}</div><div class="text-xs font-mono text-slate-400 mt-0.5">${data.nuptk}</div></td>
+                <td class="px-6 py-4">${jjmBadge}</td>
+                <td class="px-6 py-4 text-slate-600 font-medium">${data.statusInfoGTK}</td>
+                <td class="px-6 py-4 ${cairClass}">${data.statusCair}</td>
+                <td class="px-6 py-4 text-slate-500 text-xs italic max-w-[200px] truncate" title="${data.kendala}">${data.kendala || '-'}</td>
+                <td class="px-6 py-4 text-right">
+                    <button class="btn-hapus-data bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-red-200 shadow-sm">Hapus</button>
+                </td>
+            `;
+
+            // Logika Tombol Hapus
+            tr.querySelector('.btn-hapus-data').addEventListener('click', async () => {
+                if(confirm(`Peringatan: Yakin ingin menghapus laporan ${data.namaGuru} untuk bulan ${data.bulan}? Tindakan ini tidak bisa dibatalkan.`)) {
+                    const btn = tr.querySelector('.btn-hapus-data');
+                    btn.disabled = true; btn.innerText = "...";
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', data.id));
+                        showToast('Data berhasil dihapus bersih!');
+                        loadAdminData(); // Refresh tabel dan matriks
+                    } catch (error) {
+                        showToast('Gagal menghapus data.', 'error');
+                        btn.disabled = false; btn.innerText = "Hapus";
+                    }
+                }
+            });
+
+            bodyAdmin.appendChild(tr);
         });
     };
 
