@@ -342,8 +342,8 @@
                         <!-- Section: Data Diri & Status -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div class="md:col-span-2">
-                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Otomatis dari Sistem)</label>
-                                <input type="text" id="namaGuruTPG" required readonly class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm bg-slate-100 text-slate-600 shadow-sm cursor-not-allowed" placeholder="Otomatis terisi dari profil Anda">
+                                <label for="namaGuruTPG" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Nama Lengkap (Beserta Gelar)</label>
+                                <input type="text" id="namaGuruTPG" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm" placeholder="Budi Santoso, S.Pd., Gr.">
                             </div>
                             <div>
                                 <label for="nuptk" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">NUPTK / NRG (16 Angka)</label>
@@ -476,6 +476,7 @@
 
             <!-- CONT 3: GURU - PENGAJUAN PERBAIKAN DAPODIK -->
             <div id="viewPerbaikanGuru" class="hidden space-y-6 animate-[slideIn_0.4s_ease-out]">
+                
                 <div class="bg-white rounded-3xl shadow-sm border border-stone-200/60 overflow-hidden">
                     <div class="p-6 md:p-8 border-b border-stone-200 bg-stone-100/50">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -489,7 +490,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="kategoriTicket" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Kategori Kendala <span class="text-red-500">*</span></label>
-                                <select id="kategoriTicket" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm">
+                                <select id="kategoriTicket" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none text-sm bg-white shadow-sm">
                                     <option value="">-- Pilih Kategori --</option>
                                     <option value="Beban Jam Mengajar (JJM)">Beban Jam Mengajar (JJM)</option>
                                     <option value="Status Kepegawaian / SK">Status Kepegawaian / SK / Golongan</option>
@@ -500,7 +501,7 @@
                             </div>
                             <div class="md:col-span-2">
                                 <label for="deskripsiTicket" class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Penjelasan & Link Dokumen <span class="text-red-500">*</span></label>
-                                <textarea id="deskripsiTicket" required rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-rose-800/10 focus:border-rose-800 outline-none text-sm bg-white shadow-sm resize-none" placeholder="Jelaskan kendala Anda. Cantumkan Link Google Drive di sini (Pastikan akses link publik)..."></textarea>
+                                <textarea id="deskripsiTicket" required rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none text-sm bg-white shadow-sm resize-none" placeholder="Jelaskan kendala Anda. Cantumkan Link Google Drive di sini (Pastikan akses link publik)..."></textarea>
                             </div>
                         </div>
                         <div class="mt-6 flex justify-end">
@@ -601,7 +602,6 @@
                                         <th class="px-6 py-4 border-b border-slate-200">Info GTK</th>
                                         <th class="px-6 py-4 border-b border-slate-200">Pencairan</th>
                                         <th class="px-6 py-4 border-b border-slate-200">Catatan Khusus</th>
-                                        <th class="px-6 py-4 border-b border-slate-200 text-right">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -828,7 +828,7 @@
     // 1. INISIALISASI FIREBASE & AUTH
     // ============================================================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc, getDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -870,7 +870,7 @@
         const toastText = document.getElementById('toastText');
         
         toastMessage.className = `flex items-center p-4 rounded-2xl shadow-xl shadow-slate-200/50 text-white font-medium border border-white/20 backdrop-blur-md ${type === 'success' ? 'bg-rose-900/95' : 'bg-red-800/90'}`;
-        toastIcon.inner = type === 'success' ? 
+        toastIcon.innerHTML = type === 'success' ? 
             '<svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
             '<svg class="w-6 h-6 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
         toastText.innerText = message;
@@ -1061,24 +1061,21 @@
         }
     };
 
-const cancelEditMode = () => {
-    document.getElementById('formTPG').reset();
-    document.getElementById('formTicket').reset();
-    
-    // Tambahkan baris ini agar nama tetap terkunci pada profil pemilik
-    document.getElementById('namaGuruTPG').value = currentUserName; 
-    
-    document.getElementById('editDocId').value = "";
-    document.getElementById('periodeBulan').disabled = false;
-    document.getElementById('periodeTahun').disabled = false;
-    document.getElementById('formTitle').innerText = "Formulir Laporan TPG";
-    document.getElementById('formTitle').classList.remove('text-rose-700');
-    document.getElementById('btnText').innerText = "Kirim Laporan";
-    const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.classList.replace('bg-rose-600', 'bg-slate-800');
-    btnSubmit.classList.replace('hover:bg-rose-700', 'hover:bg-slate-900');
-    document.getElementById('btnCancelEdit').classList.add('hidden');
-};
+    const cancelEditMode = () => {
+        document.getElementById('formTPG').reset();
+        document.getElementById('formTicket').reset();
+        document.getElementById('editDocId').value = "";
+        document.getElementById('periodeBulan').disabled = false;
+        document.getElementById('periodeTahun').disabled = false;
+        
+        document.getElementById('formTitle').innerText = "Formulir Laporan TPG";
+        document.getElementById('formTitle').classList.remove('text-emerald-700');
+        document.getElementById('btnText').innerText = "Kirim Laporan";
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.classList.replace('bg-emerald-600', 'bg-slate-800');
+        btnSubmit.classList.replace('hover:bg-emerald-700', 'hover:bg-slate-900');
+        document.getElementById('btnCancelEdit').classList.add('hidden');
+    };
 
     const populateEditForm = (data) => {
         document.getElementById('editDocId').value = data.id;
@@ -1096,86 +1093,75 @@ const cancelEditMode = () => {
         document.getElementById('kendala').value = data.kendala || '';
         
         document.getElementById('formTitle').innerText = "Revisi Laporan TPG (Diizinkan)";
-        document.getElementById('formTitle').classList.add('text-rose-700');
+        document.getElementById('formTitle').classList.add('text-emerald-700');
         document.getElementById('btnText').innerText = "Simpan Pembaruan Data";
         
         const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.classList.replace('bg-slate-800', 'bg-rose-600');
-        btnSubmit.classList.replace('hover:bg-slate-900', 'hover:bg-rose-700');
+        btnSubmit.classList.replace('bg-slate-800', 'bg-emerald-600');
+        btnSubmit.classList.replace('hover:bg-slate-900', 'hover:bg-emerald-700');
         
         document.getElementById('btnCancelEdit').classList.remove('hidden');
         toggleView('form');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ============================================================================
-    // 5. DATA FETCHING & RENDERING
-    // ============================================================================
-    
-// 1. Fungsi renderAdminTable (Ditambah Fitur Hapus)
+    btnGuruForm.addEventListener('click', () => { toggleView('form'); cancelEditMode(); });
+    btnGuruRekap.addEventListener('click', () => toggleView('rekapGuru'));
+    btnGuruPerbaikan.addEventListener('click', () => toggleView('perbaikan'));
+    btnAdminTable.addEventListener('click', () => toggleView('tableAdmin'));
+    btnAdminMatriks.addEventListener('click', () => toggleView('matrixAdmin'));
+    btnAdminApproveRevisi.addEventListener('click', () => toggleView('adminApproveRevisi'));
+    btnAdminDapodik.addEventListener('click', () => toggleView('adminDapodik'));
+    btnAdminUsers.addEventListener('click', () => toggleView('usersAdmin'));
+    btnAdminBuatAkun.addEventListener('click', () => toggleView('buatAkunAdmin'));
+    document.getElementById('btnCancelEdit').addEventListener('click', () => { cancelEditMode(); toggleView('rekapGuru'); });
+
+    document.getElementById('tabGuruAuth').addEventListener('click', () => {
+        loginRoleInput.value = 'guru';
+        document.getElementById('tabGuruAuth').className = "flex-1 py-2 px-4 rounded-lg bg-white shadow-sm text-sm font-semibold text-slate-800 transition-all";
+        document.getElementById('tabAdminAuth').className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 transition-all";
+    });
+    document.getElementById('tabAdminAuth').addEventListener('click', () => {
+        loginRoleInput.value = 'admin';
+        document.getElementById('tabAdminAuth').className = "flex-1 py-2 px-4 rounded-lg bg-white shadow-sm text-sm font-semibold text-slate-800 transition-all";
+        document.getElementById('tabGuruAuth').className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 transition-all";
+    });
+
+    document.getElementById('btnShowRegister').addEventListener('click', () => { loginSection.classList.add('hidden'); registerSection.classList.remove('hidden'); });
+    document.getElementById('btnShowLogin').addEventListener('click', () => { registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); });
+
+    // --- DATA FETCHING (ADMIN & SEKOLAH) ---
     const renderAdminTable = (dataArray) => {
         const bodyAdmin = document.getElementById('adminTableBody');
         const emptyState = document.getElementById('adminTableEmpty');
-        
-        if (!bodyAdmin) return;
         bodyAdmin.innerHTML = '';
-        
         if(dataArray.length === 0) {
-            if(emptyState) emptyState.classList.remove('hidden');
+            emptyState.classList.remove('hidden');
             return;
         }
-        
-        if(emptyState) emptyState.classList.add('hidden');
-        
-        dataArray.sort((a, b) => a.namaGuru.localeCompare(b.namaGuru));
-
+        emptyState.classList.add('hidden');
         dataArray.forEach((data) => {
             const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString('id-ID') : '-';
             const periodeStr = (data.bulan && data.tahun) ? `<div class="font-bold text-slate-800">${data.bulan} ${data.tahun}</div><div class="text-[10px] text-slate-400 font-medium">Diinput: ${date}</div>` : `<div class="text-slate-500">${date}</div>`;
             const jjmBadge = `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold ${data.statusJJM.includes('Aman') ? 'bg-stone-100 text-stone-700 border border-stone-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}">${data.statusJJM}</span>`;
             const cairClass = data.statusCair === 'Cair' ? 'text-rose-800 font-bold' : 'text-slate-500 font-medium';
 
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50/80 transition-colors";
-            tr.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">${periodeStr}</td>
-                <td class="px-6 py-4"><div class="font-semibold text-slate-800">${data.namaGuru}</div><div class="text-xs font-mono text-slate-400 mt-0.5">${data.nuptk}</div></td>
-                <td class="px-6 py-4">${jjmBadge}</td>
-                <td class="px-6 py-4 text-slate-600 font-medium">${data.statusInfoGTK}</td>
-                <td class="px-6 py-4 ${cairClass}">${data.statusCair}</td>
-                <td class="px-6 py-4 text-slate-500 text-xs italic max-w-[200px] truncate" title="${data.kendala}">${data.kendala || '-'}</td>
-                <td class="px-6 py-4 text-right">
-                    <button class="btn-hapus-data bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-red-200 shadow-sm">Hapus</button>
-                </td>
-            `;
-
-            // Logika Tombol Hapus
-            tr.querySelector('.btn-hapus-data').addEventListener('click', async () => {
-                if(confirm(`Peringatan: Yakin ingin menghapus laporan ${data.namaGuru} untuk bulan ${data.bulan}? Tindakan ini tidak bisa dibatalkan.`)) {
-                    const btn = tr.querySelector('.btn-hapus-data');
-                    btn.disabled = true; btn.innerText = "...";
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', data.id));
-                        showToast('Data berhasil dihapus bersih!');
-                        loadAdminData(); // Refresh tabel dan matriks
-                    } catch (error) {
-                        showToast('Gagal menghapus data.', 'error');
-                        btn.disabled = false; btn.innerText = "Hapus";
-                    }
-                }
-            });
-
-            bodyAdmin.appendChild(tr);
+            bodyAdmin.insertAdjacentHTML('beforeend', `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">${periodeStr}</td>
+                    <td class="px-6 py-4"><div class="font-semibold text-slate-800">${data.namaGuru}</div><div class="text-xs font-mono text-slate-400 mt-0.5">${data.nuptk}</div></td>
+                    <td class="px-6 py-4 hidden">${data.nuptk}</td>
+                    <td class="px-6 py-4">${jjmBadge}</td>
+                    <td class="px-6 py-4 text-slate-600 font-medium">${data.statusInfoGTK}</td>
+                    <td class="px-6 py-4 ${cairClass}">${data.statusCair}</td>
+                    <td class="px-6 py-4 text-slate-500 text-xs italic max-w-[200px] truncate" title="${data.kendala}">${data.kendala || '-'}</td>
+                </tr>
+            `);
         });
     };
 
-    // 2. Fungsi buildSchoolMatrixHTML (Perbaikan insertAdjacentHTML & Proteksi Null)
     const buildSchoolMatrixHTML = (year, tableBodyId) => {
         const body = document.getElementById(tableBodyId);
-        
-        // Proteksi: Cegah error "Cannot read properties of null"
-        if (!body) return console.error("Error: Elemen '" + tableBodyId + "' tidak ditemukan di HTML.");
-
         body.innerHTML = '';
         const filteredData = allAdminDataCache.filter(item => item.tahun === year);
         if(filteredData.length === 0) {
@@ -1189,7 +1175,7 @@ const cancelEditMode = () => {
             schoolMatrix[d.namaGuru][d.bulan] = d;
         });
 
-        Object.keys(schoolMatrix).sort((a, b) => a.localeCompare(b)).forEach(guru => {
+        Object.keys(schoolMatrix).sort().forEach(guru => {
             let tr = `<tr class="hover:bg-slate-50/80 transition-colors divide-x divide-slate-100">
                         <td class="px-4 py-3 font-semibold text-slate-700 text-left sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate" title="${guru}">${guru}</td>`;
             bulanDaftar.forEach(bln => {
@@ -1197,11 +1183,10 @@ const cancelEditMode = () => {
                 tr += `<td class="px-2 py-3">${getStatusBadge(cellData, false)}</td>`;
             });
             tr += `</tr>`;
-            
-            // Menggunakan insertAdjacentHTML yang benar
             body.insertAdjacentHTML('beforeend', tr);
         });
     };
+
     const filterAdminData = () => {
         const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
         const filterStatus = document.getElementById('adminFilterStatus').value;
@@ -1218,33 +1203,28 @@ const cancelEditMode = () => {
         renderAdminTable(filteredData);
     };
 
-const loadAdminData = async () => {
+    const loadAdminData = async () => {
         try {
-            const querySnapshot = await getDocs(tpgDataCol);
+            const snap = await getDocs(tpgDataCol);
             let rawData = [];
-            querySnapshot.forEach(doc => { rawData.push({ id: doc.id, ...doc.data() }); });
+            snap.forEach(doc => { rawData.push({ id: doc.id, ...doc.data() }); });
             rawData.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             allAdminDataCache = rawData; 
             
             filterAdminData();
             buildSchoolMatrixHTML(document.getElementById('guruFilterTahunSekolah').value, 'guruSekolahBody');
             buildSchoolMatrixHTML(document.getElementById('adminFilterTahunMatriks').value, 'adminSekolahBody');
-            
-        } catch (err) { 
-            // Tambahkan console.error agar pesan aslinya terlihat di F12
-            console.error("Detail Error Load Admin:", err); 
-            // Tampilkan pesan aslinya di Toast
-            showToast("Gagal memuat: " + err.message, "error"); 
-        }
+        } catch (err) { showToast("Gagal memuat rekap data.", "error"); }
     };
 
+    // --- ADMIN REVISI APPROVAL ---
     const loadAdminApproveRevisiData = async () => {
         const body = document.getElementById('adminApproveRevisiBody');
         body.innerHTML = '<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">Memuat pengajuan...</td></tr>';
         try {
-            const querySnapshot = await getDocs(tpgDataCol);
+            const snap = await getDocs(tpgDataCol);
             let revisiData = [];
-            querySnapshot.forEach(doc => {
+            snap.forEach(doc => {
                 const d = doc.data();
                 if(d.statusRevisi === 'Menunggu') revisiData.push({ id: doc.id, ...d });
             });
@@ -1259,11 +1239,11 @@ const loadAdminData = async () => {
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap"><div class="font-bold text-slate-800">${data.bulan} ${data.tahun}</div></td>
                     <td class="px-6 py-4"><div class="font-semibold text-slate-800">${data.namaGuru}</div><div class="text-xs text-slate-400">${data.nuptk}</div></td>
-                    <td class="px-6 py-4 text-sm text-stone-600 italic bg-stone-50 rounded-lg border border-stone-200">"${data.alasanRevisi || '-'}"</td>
+                    <td class="px-6 py-4 text-sm text-stone-600 italic bg-amber-50/50 rounded-lg border border-amber-100/50">"${data.alasanRevisi || '-'}"</td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex justify-end gap-2">
                             <button class="btn-tolak text-xs bg-white text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm">Tolak</button>
-                            <button class="btn-izinkan text-xs bg-rose-700 text-white hover:bg-rose-800 px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm">Izinkan Edit</button>
+                            <button class="btn-izinkan text-xs bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm">Izinkan Edit</button>
                         </div>
                     </td>
                 `;
@@ -1286,6 +1266,7 @@ const loadAdminData = async () => {
         } catch(e) { showToast("Gagal memuat data persetujuan.", "error"); }
     };
 
+    // --- GURU HISTORY ---
     const renderIndividualMatrix = () => {
         const year = document.getElementById('guruFilterTahunIndividu').value;
         const body = document.getElementById('guruIndividuBody');
@@ -1314,6 +1295,10 @@ const loadAdminData = async () => {
         tr += `</tr>`;
         body.insertAdjacentHTML('beforeend', tr);
         
+        attachTeacherMatrixClickEvents();
+    };
+
+    const attachTeacherMatrixClickEvents = () => {
         document.querySelectorAll('.cell-tpg-click').forEach(cell => {
             cell.addEventListener('click', () => {
                 const id = cell.getAttribute('data-id');
@@ -1339,10 +1324,14 @@ const loadAdminData = async () => {
         const individuBody = document.getElementById('guruIndividuBody');
         individuBody.innerHTML = '<tr><td colspan="13" class="px-6 py-12 text-center text-slate-400 italic">Memuat matriks personal...</td></tr>';
         try {
-            const q = query(tpgDataCol, where("userId", "==", auth.currentUser.uid));
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocs(tpgDataCol);
             currentUserHistory = [];
-            querySnapshot.forEach(doc => { currentUserHistory.push({ id: doc.id, ...doc.data() }); });
+            querySnapshot.forEach(doc => { 
+                const d = doc.data();
+                if(d.userId === auth.currentUser.uid) {
+                    currentUserHistory.push({ id: doc.id, ...d }); 
+                }
+            });
             currentUserHistory.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             
             if(currentUserHistory.length === 0) {
@@ -1350,18 +1339,25 @@ const loadAdminData = async () => {
             } else {
                 renderIndividualMatrix();
             }
-        } catch (err) { showToast("Gagal memuat riwayat.", "error"); }
+        } catch (err) { 
+            console.error(err);
+            individuBody.innerHTML = '<tr><td colspan="13" class="px-6 py-12 text-center text-red-500 italic font-medium">Gagal memuat. Cek izin Firestore.</td></tr>';
+            showToast("Gagal memuat riwayat.", "error"); 
+        }
     };
 
+    // --- TICKET DAPODIK ---
     const loadTeacherTickets = async () => {
         if(!auth.currentUser) return;
         const body = document.getElementById('ticketGuruBody');
         body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Memuat riwayat permintaan...</td></tr>';
         try {
-            const q = query(ticketsCol, where("userId", "==", auth.currentUser.uid));
-            const snap = await getDocs(q);
+            const snap = await getDocs(ticketsCol);
             let tickets = [];
-            snap.forEach(doc => tickets.push({ id: doc.id, ...doc.data() }));
+            snap.forEach(doc => { 
+                const d = doc.data();
+                if(d.userId === auth.currentUser.uid) tickets.push({ id: doc.id, ...d }); 
+            });
             tickets.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             
             body.innerHTML = '';
@@ -1373,16 +1369,16 @@ const loadAdminData = async () => {
             tickets.forEach(t => {
                 const date = t.timestamp ? t.timestamp.toDate().toLocaleDateString('id-ID') : '-';
                 let statusBadge = '';
-                if(t.status === 'Selesai') statusBadge = '<span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-xs font-bold border border-rose-200">✅ Selesai</span>';
-                else if(t.status === 'Menunggu Data') statusBadge = '<span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold border border-amber-200">⚠️ Butuh Data</span>';
-                else if(t.status === 'Diproses') statusBadge = '<span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-bold border border-orange-200">⚙️ Diproses</span>';
-                else statusBadge = '<span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-xs font-bold border border-stone-200">⏳ Menunggu</span>';
+                if(t.status === 'Selesai') statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200/50">✅ Selesai</span>';
+                else if(t.status === 'Menunggu Data') statusBadge = '<span class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200/50">⚠️ Butuh Data</span>';
+                else if(t.status === 'Diproses') statusBadge = '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200/50">⚙️ Diproses</span>';
+                else statusBadge = '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">⏳ Menunggu</span>';
 
-                const pesanAdmin = t.pesanAdmin ? `<div class="bg-stone-100 p-2 rounded mt-1 border border-stone-200 text-stone-800 text-[11px] italic">" ${t.pesanAdmin} "</div>` : '<span class="text-slate-300">-</span>';
+                const pesanAdmin = t.pesanAdmin ? `<div class="bg-rose-50/50 p-2 rounded mt-1 border border-rose-100 text-rose-900 text-[11px] italic">" ${t.pesanAdmin} "</div>` : '<span class="text-slate-300">-</span>';
                 const balasanGuru = t.pesanGuru ? `<div class="text-[10px] mt-1 text-slate-500">Balasan Anda:<br><span class="text-slate-700 font-medium">${t.pesanGuru}</span></div>` : '';
                 let btnHtml = '';
                 if(t.status !== 'Selesai') {
-                    btnHtml = `<button class="btn-balas bg-white hover:bg-stone-50 text-stone-700 border border-stone-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Balas/Kirim File</button>`;
+                    btnHtml = `<button class="btn-balas bg-white hover:bg-slate-50 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Balas/Kirim File</button>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -1430,14 +1426,14 @@ const loadAdminData = async () => {
 
             tickets.forEach(t => {
                 const date = t.timestamp ? t.timestamp.toDate().toLocaleDateString('id-ID') : '-';
-                const balasanGuru = t.pesanGuru ? `<div class="bg-amber-50 p-2 rounded mt-2 border border-amber-100 text-amber-800 text-[11px]"><strong>Balasan/Link:</strong> ${t.pesanGuru}</div>` : '';
+                const balasanGuru = t.pesanGuru ? `<div class="bg-blue-50 p-2 rounded mt-2 border border-blue-100 text-blue-800 text-[11px]"><strong>Balasan/Link:</strong> ${t.pesanGuru}</div>` : '';
                 const tanggapanTerakhir = t.pesanAdmin ? `<div class="text-[10px] mt-1 text-slate-500">Tanggapan Anda:<br><span class="text-rose-800 font-medium">"${t.pesanAdmin}"</span></div>` : '';
                 
                 let statusBadge = '';
-                if(t.status === 'Selesai') statusBadge = '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[10px] font-bold border border-rose-200">Selesai</span>';
-                else if(t.status === 'Menunggu Data') statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200">Butuh Data</span>';
-                else if(t.status === 'Diproses') statusBadge = '<span class="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-[10px] font-bold border border-orange-200">Diproses</span>';
-                else statusBadge = '<span class="bg-stone-100 text-stone-600 px-2 py-0.5 rounded text-[10px] font-bold border border-stone-200">Menunggu</span>';
+                if(t.status === 'Selesai') statusBadge = '<span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-200/50">Selesai</span>';
+                else if(t.status === 'Menunggu Data') statusBadge = '<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200/50">Butuh Data</span>';
+                else if(t.status === 'Diproses') statusBadge = '<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200/50">Diproses</span>';
+                else statusBadge = '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200">Menunggu</span>';
 
                 let btnHtml = `<button class="btn-proses bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">Proses / Tanggapi</button>`;
 
@@ -1449,7 +1445,7 @@ const loadAdminData = async () => {
                         <div class="text-[10px] text-slate-400 mt-0.5">${date}</div>
                         <div class="mt-2">${statusBadge}</div>
                     </td>
-                    <td class="px-6 py-4"><span class="bg-stone-100 text-stone-700 px-2.5 py-1 rounded text-[11px] font-bold">${t.kategori}</span></td>
+                    <td class="px-6 py-4"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded text-[11px] font-bold">${t.kategori}</span></td>
                     <td class="px-6 py-4 text-sm text-slate-600">"${t.deskripsi}"${balasanGuru}${tanggapanTerakhir}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">${btnHtml}</td>
                 `;
@@ -1470,12 +1466,12 @@ const loadAdminData = async () => {
         body.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Memuat pengguna...</td></tr>';
         try {
             const snap = await getDocs(usersCol);
-            let users = []; 
-            snap.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
-            users.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
-            body.innerHTML = '';
+            let rawUsers = [];
+            snap.forEach(doc => rawUsers.push({ id: doc.id, ...doc.data() }));
+            rawUsers.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             
-            users.forEach((data) => {
+            body.innerHTML = '';
+            rawUsers.forEach((data) => {
                 const isSelf = auth.currentUser.uid === data.id;
                 const isAdmin = data.role === 'admin';
                 const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString('id-ID') : '-';
@@ -1484,59 +1480,25 @@ const loadAdminData = async () => {
                 row.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-800">${data.nama} ${isSelf ? '<span class="text-[9px] bg-slate-800 text-white px-2 py-0.5 rounded ml-2 uppercase tracking-wider">Anda</span>' : ''}</td>
                     <td class="px-6 py-4 text-slate-500 font-medium">${data.username}</td>
-                    <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border ${isAdmin ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-stone-50 text-stone-600 border-stone-200'}">${data.role}</span></td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isAdmin ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-stone-50 text-stone-600 border-stone-200'}">${data.role}</span>
+                    </td>
                     <td class="px-6 py-4 text-slate-500 text-xs">${date}</td>
                     <td class="px-6 py-4 text-right">
-                        <button class="edit-nama-btn bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 rounded-lg text-xs font-bold transition-all border border-stone-200 shadow-sm mr-1">Edit Nama</button>
-                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none hidden' : ''}">${isAdmin ? 'Cabut Admin' : 'Jadikan Admin'}</button>
+                        <button class="promote-btn bg-white hover:bg-slate-800 text-slate-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-all border border-slate-200 shadow-sm ${isSelf ? 'opacity-0 pointer-events-none' : ''}">
+                            ${isAdmin ? 'Cabut Akses Admin' : 'Jadikan Admin'}
+                        </button>
                     </td>
                 `;
-
-                // FITUR SINKRONISASI NAMA MASAL
-                const editBtn = row.querySelector('.edit-nama-btn');
-                editBtn.addEventListener('click', async () => {
-                    const newName = prompt(`Ubah nama & gelar untuk akun ${data.username}:`, data.nama);
-                    if (newName && newName.trim() !== "" && newName.trim() !== data.nama) {
-                        editBtn.disabled = true; editBtn.innerText = "...";
-                        try {
-                            const finalName = newName.trim();
-                            // 1. Update nama profil user
-                            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { nama: finalName });
-                            
-                            // 2. Timpa semua nama di laporan TPG lama yang terlanjur terpisah
-                            const qTpg = query(tpgDataCol, where("userId", "==", data.id));
-                            const snapTpg = await getDocs(qTpg);
-                            
-                            // Tunggu semua proses update selesai sepenuhnya
-                            for (const docTpg of snapTpg.docs) {
-                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', docTpg.id), { namaGuru: finalName });
-                            }
-                            
-                            showToast(`Nama diubah dan ${snapTpg.size} riwayat laporan disinkronkan.`);
-                            
-                            // Refresh data secara berurutan agar tampilan tidak crash
-                            await loadAdminData(); 
-                            await loadUserData(); 
-                            
-                        } catch(e) { 
-                            showToast("Gagal sinkronisasi.", "error"); 
-                            editBtn.disabled = false; editBtn.innerText = "Edit Nama"; 
-                        }
-                    }
-                });
-
-                const promoteBtn = row.querySelector('.promote-btn');
-                promoteBtn.addEventListener('click', async () => {
+                const btn = row.querySelector('.promote-btn');
+                btn.addEventListener('click', async () => {
                     const newRole = isAdmin ? 'guru' : 'admin';
-                    promoteBtn.disabled = true; promoteBtn.innerText = "...";
-                    try { 
+                    btn.disabled = true; btn.innerText = "...";
+                    try {
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', data.id), { role: newRole });
-                        showToast(`Status diperbarui menjadi ${newRole.toUpperCase()}`); 
-                        await loadUserData(); 
-                    } catch(e) { 
-                        showToast("Gagal akses.", "error"); 
-                        promoteBtn.disabled = false; 
-                    }
+                        showToast(`Status ${data.nama} diperbarui menjadi ${newRole.toUpperCase()}`);
+                        loadUserData();
+                    } catch(e) { showToast("Gagal memodifikasi hak akses.", "error"); btn.disabled = false; }
                 });
                 body.appendChild(row);
             });
@@ -1546,31 +1508,6 @@ const loadAdminData = async () => {
     // ============================================================================
     // 6. EVENT BINDING: FILTER & BINDINGS LAIN
     // ============================================================================
-    btnGuruForm.addEventListener('click', () => { toggleView('form'); cancelEditMode(); });
-    btnGuruRekap.addEventListener('click', () => toggleView('rekapGuru'));
-    btnGuruPerbaikan.addEventListener('click', () => toggleView('perbaikan'));
-    btnAdminTable.addEventListener('click', () => toggleView('tableAdmin'));
-    btnAdminMatriks.addEventListener('click', () => toggleView('matrixAdmin'));
-    btnAdminApproveRevisi.addEventListener('click', () => toggleView('adminApproveRevisi'));
-    btnAdminDapodik.addEventListener('click', () => toggleView('adminDapodik'));
-    btnAdminUsers.addEventListener('click', () => toggleView('usersAdmin'));
-    btnAdminBuatAkun.addEventListener('click', () => toggleView('buatAkunAdmin'));
-    document.getElementById('btnCancelEdit').addEventListener('click', () => { cancelEditMode(); toggleView('rekapGuru'); });
-
-    document.getElementById('tabGuruAuth').addEventListener('click', () => {
-        loginRoleInput.value = 'guru';
-        document.getElementById('tabGuruAuth').className = "flex-1 py-2 px-4 rounded-lg bg-white shadow-sm text-sm font-semibold text-slate-800 transition-all";
-        document.getElementById('tabAdminAuth').className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 transition-all";
-    });
-    document.getElementById('tabAdminAuth').addEventListener('click', () => {
-        loginRoleInput.value = 'admin';
-        document.getElementById('tabAdminAuth').className = "flex-1 py-2 px-4 rounded-lg bg-white shadow-sm text-sm font-semibold text-slate-800 transition-all";
-        document.getElementById('tabGuruAuth').className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-800 transition-all";
-    });
-
-    document.getElementById('btnShowRegister').addEventListener('click', () => { loginSection.classList.add('hidden'); registerSection.classList.remove('hidden'); });
-    document.getElementById('btnShowLogin').addEventListener('click', () => { registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); });
-
     document.getElementById('adminSearch').addEventListener('input', filterAdminData);
     document.getElementById('adminFilterStatus').addEventListener('change', filterAdminData);
     document.getElementById('adminFilterBulan').addEventListener('change', filterAdminData);
@@ -1596,6 +1533,10 @@ const loadAdminData = async () => {
     document.getElementById('btnShowGantiSandi').addEventListener('click', triggerShowGantiSandi);
     document.getElementById('btnShowGantiSandiMobile').addEventListener('click', triggerShowGantiSandi);
     document.getElementById('btnBatalGantiSandi').addEventListener('click', () => modalGantiSandi.classList.add('hidden'));
+    
+    document.getElementById('btnBatalRevisiModal').addEventListener('click', () => modalRevisi.classList.add('hidden'));
+    document.getElementById('btnBatalProsesTiket').addEventListener('click', () => modalProsesTiket.classList.add('hidden'));
+    document.getElementById('btnBatalBalasTiket').addEventListener('click', () => modalBalasTiket.classList.add('hidden'));
 
     document.getElementById('btnExportRekap').addEventListener('click', () => {
         const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
@@ -1691,10 +1632,14 @@ const loadAdminData = async () => {
     });
 
     const doLogout = async () => {
-        await signOut(auth);
-        dashboardSection.classList.add('hidden'); authWrapper.classList.remove('hidden');
-        cancelEditMode(); currentUserName = "";
-        showToast("Sesi telah diakhiri.");
+        try {
+            await signOut(auth);
+            dashboardSection.classList.add('hidden'); authWrapper.classList.remove('hidden');
+            cancelEditMode(); currentUserName = "";
+            showToast("Sesi telah diakhiri.");
+        } catch(e) {
+            showToast("Gagal keluar sesi.", "error");
+        }
     };
     document.getElementById('btnLogout').addEventListener('click', doLogout);
     document.getElementById('btnLogoutMobile').addEventListener('click', doLogout);
@@ -1725,19 +1670,32 @@ const loadAdminData = async () => {
         const bulanVal = document.getElementById('periodeBulan').value;
         const tahunVal = document.getElementById('periodeTahun').value;
         
-        const isDuplicate = currentUserHistory.some(data => data.bulan === bulanVal && data.tahun === tahunVal && data.id !== editId);
-        if (isDuplicate) return showToast(`Gagal! Laporan ${bulanVal} ${tahunVal} sudah ada.`, "error");
-        
         btn.disabled = true; spinner.classList.remove('hidden');
-        const payload = {
-            bulan: bulanVal, tahun: tahunVal,
-            namaGuru: document.getElementById('namaGuruTPG').value, nuptk: nuptkVal,
-            statusJJM: document.getElementById('statusJJM').value, statusInfoGTK: document.getElementById('statusInfoGTK').value,
-            statusCair: document.getElementById('statusCair').value, kendala: document.getElementById('kendala').value,
-            userId: auth.currentUser.uid
-        };
-
+        
         try {
+            const snap = await getDocs(tpgDataCol);
+            let isDuplicate = false;
+            snap.forEach(d => {
+                const data = d.data();
+                if(data.userId === auth.currentUser.uid && data.bulan === bulanVal && data.tahun === tahunVal && d.id !== editId) {
+                    isDuplicate = true;
+                }
+            });
+
+            if (isDuplicate) {
+                showToast(`Gagal! Laporan ${bulanVal} ${tahunVal} sudah ada.`, "error");
+                btn.disabled = false; spinner.classList.add('hidden');
+                return;
+            }
+            
+            const payload = {
+                bulan: bulanVal, tahun: tahunVal,
+                namaGuru: document.getElementById('namaGuruTPG').value, nuptk: nuptkVal,
+                statusJJM: document.getElementById('statusJJM').value, statusInfoGTK: document.getElementById('statusInfoGTK').value,
+                statusCair: document.getElementById('statusCair').value, kendala: document.getElementById('kendala').value,
+                userId: auth.currentUser.uid
+            };
+
             if(editId) {
                 payload.statusRevisi = 'Selesai'; payload.alasanRevisi = '';
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', editId), payload);
@@ -1748,8 +1706,29 @@ const loadAdminData = async () => {
                 showToast("Laporan sukses terekam!");
             }
             cancelEditMode(); toggleView('rekapGuru'); 
-        } catch (err) { showToast("Gagal menyimpan data.", "error"); } 
-        finally { btn.disabled = false; spinner.classList.add('hidden'); }
+        } catch (err) { 
+            console.error(err);
+            showToast("Gagal menyimpan data. Pastikan izin Firestore sudah terbuka.", "error"); 
+        } finally { 
+            btn.disabled = false; spinner.classList.add('hidden'); 
+        }
+    });
+
+    document.getElementById('btnKirimRevisiModal').addEventListener('click', async () => {
+        const id = document.getElementById('revisiDocId').value;
+        const alasan = document.getElementById('revisiAlasan').value.trim();
+        const btnText = document.getElementById('btnKirimRevisiText');
+
+        if(!alasan) return showToast("Alasan perbaikan wajib diisi!", "error");
+        btnText.innerText = "Mengirim...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'data_tpg', id), {
+                statusRevisi: 'Menunggu', alasanRevisi: alasan
+            });
+            showToast("Pengajuan revisi berhasil dikirim ke Admin!");
+            modalRevisi.classList.add('hidden'); loadTeacherHistory(); 
+        } catch(e) { showToast("Gagal mengirim pengajuan.", "error"); } 
+        finally { btnText.innerText = "Kirim Pengajuan"; }
     });
 
     document.getElementById('formTicket').addEventListener('submit', async (e) => {
@@ -1766,6 +1745,42 @@ const loadAdminData = async () => {
             document.getElementById('formTicket').reset(); loadTeacherTickets();
         } catch(err) { showToast("Gagal mengirim tiket.", "error"); } 
         finally { btn.disabled = false; document.getElementById('btnTicketText').innerText = "Kirim Permintaan"; }
+    });
+
+    document.getElementById('btnSimpanProsesTiket').addEventListener('click', async () => {
+        const id = document.getElementById('prosesTiketId').value;
+        const status = document.getElementById('statusProsesTiket').value;
+        const pesan = document.getElementById('catatanProsesTiket').value.trim();
+        const btn = document.getElementById('btnSimpanProsesTiket');
+        const btnText = document.getElementById('btnSimpanProsesTiketText');
+
+        btn.disabled = true; btnText.innerText = "Menyimpan...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets_dapodik', id), {
+                status: status, pesanAdmin: pesan, lastUpdateAdmin: serverTimestamp()
+            });
+            showToast("Tanggapan berhasil disimpan.");
+            modalProsesTiket.classList.add('hidden'); loadAdminTicketsData();
+        } catch (e) { showToast("Gagal menyimpan tanggapan.", "error"); } 
+        finally { btn.disabled = false; btnText.innerText = "Simpan Tanggapan"; }
+    });
+
+    document.getElementById('btnKirimBalasTiket').addEventListener('click', async () => {
+        const id = document.getElementById('balasTiketId').value;
+        const pesan = document.getElementById('pesanBalasTiket').value.trim();
+        const btn = document.getElementById('btnKirimBalasTiket');
+        const btnText = document.getElementById('btnKirimBalasTiketText');
+
+        if(!pesan) return showToast("Balasan tidak boleh kosong.", "error");
+        btn.disabled = true; btnText.innerText = "Mengirim...";
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets_dapodik', id), {
+                pesanGuru: pesan, status: 'Menunggu', lastUpdateGuru: serverTimestamp()
+            });
+            showToast("Balasan berhasil dikirim.");
+            modalBalasTiket.classList.add('hidden'); loadTeacherTickets();
+        } catch (e) { showToast("Gagal mengirim balasan.", "error"); } 
+        finally { btn.disabled = false; btnText.innerText = "Kirim Balasan"; }
     });
 
     document.getElementById('formAdminBuatAkun').addEventListener('submit', async (e) => {
@@ -1858,25 +1873,29 @@ const loadAdminData = async () => {
     // 8. AUTH OBSERVER
     // ============================================================================
     onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        dashboardSection.classList.add('hidden');
-        authWrapper.classList.remove('hidden');
-    } else {
-        const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
-        if(userDoc.exists()) {
-            currentUserName = userDoc.data().nama;
-            
-            // Tambahkan dua baris ini untuk auto-fill nama ke form HTML
-            const inputNama = document.getElementById('namaGuruTPG');
-            if (inputNama) inputNama.value = currentUserName; 
-            
-            authWrapper.classList.add('hidden');
-            dashboardSection.classList.remove('hidden');
-            userRoleDisplay.innerText = userDoc.data().role;
-            toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
+        if (!user) {
+            dashboardSection.classList.add('hidden');
+            authWrapper.classList.remove('hidden');
+        } else {
+            try {
+                const userDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid));
+                if(userDoc.exists()) {
+                    currentUserName = userDoc.data().nama;
+                    authWrapper.classList.add('hidden');
+                    dashboardSection.classList.remove('hidden');
+                    userRoleDisplay.innerText = userDoc.data().role;
+                    toggleView(userDoc.data().role === 'admin' ? 'tableAdmin' : 'form');
+                } else {
+                    showToast("Profil tidak ditemukan. Lapor Admin.", "error");
+                    await signOut(auth);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Akses Ditolak. Pastikan aturan (Rules) Firestore Anda mengizinkan proses baca/tulis data.", "error");
+                await signOut(auth);
+            }
         }
-    }
-});
+    });
 </script>
 </body>
 </html>
